@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"task-manager/middleware"
 	"task-manager/models"
 	"task-manager/service"
 
@@ -19,6 +20,7 @@ func NewTodoHandler(s *service.TodoService) *TodoHandler {
 
 func (h *TodoHandler) RegisterRoutes(r *gin.Engine) {
 	todos := r.Group("/todos")
+	todos.Use(middleware.AuthMiddleware())
 
 	todos.POST("", h.Create)
 	todos.GET("", h.GetAll)

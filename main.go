@@ -4,9 +4,8 @@ import (
 	"log"
 	"task-manager/db"
 	"task-manager/handler"
-	"task-manager/service"
-
 	"task-manager/repo"
+	"task-manager/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,17 +13,23 @@ import (
 func main() {
 	dsn := "host=localhost user=postgres password=Ernar17042006 dbname=todo port=5432 sslmode=disable"
 
-	db, err := db.InitDB(dsn)
+	database, err := db.InitDB(dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	repo := repo.NewTodoRepository(db)
-	service := service.NewTodoService(repo)
-	handler := handler.NewTodoHandler(service)
+	todoRepo := repo.NewTodoRepository(database)
+	todoService := service.NewTodoService(todoRepo)
+	todoHandler := handler.NewTodoHandler(todoService)
+
+	userRepo := repo.NewUserRepository(database)
+	authService := service.NewAuthService(userRepo)
+	authHandler := handler.NewAuthHandler(authService)
 
 	r := gin.Default()
-	handler.RegisterRoutes(r)
+
+	authHandler.RegisterRoutes(r)
+	todoHandler.RegisterRoutes(r)
 
 	r.Run(":8080")
 }
