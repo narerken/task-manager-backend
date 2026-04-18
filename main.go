@@ -13,6 +13,10 @@ import (
 func main() {
 	dsn := "host=localhost user=postgres password=Ernar17042006 dbname=todo port=5432 sslmode=disable"
 
+	if err := db.RunMigrations(dsn, "file://migrations"); err != nil {
+		log.Fatal("migration failed:", err)
+	}
+
 	database, err := db.InitDB(dsn)
 	if err != nil {
 		log.Fatal(err)
