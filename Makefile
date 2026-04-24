@@ -1,4 +1,4 @@
-# conf
+# ─── Database config ──────────────────────────────────────────
 DB_HOST     ?= localhost
 DB_PORT     ?= 5432
 DB_USER     ?= postgres
@@ -6,59 +6,32 @@ DB_PASSWORD ?= Ernar17042006
 DB_NAME     ?= todo
 DB_SSLMODE  ?= disable
 
-DATABASE_URL := postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSLMODE)
+DSN := postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSLMODE)
+M   := migrate -path migrations -database "$(DSN)"
 
-MIGRATIONS_DIR := migrations
-MIGRATE        := migrate
-MIGRATE_ARGS   := -path $(MIGRATIONS_DIR) -database "$(DATABASE_URL)"
+# ─── App ──────────────────────────────────────────────────────
+.PHONY: run build tidy
+run:   go run ./...                      ## Run the app
+build: go build -o bin/app ./...         ## Build binary
+tidy:  go mod tidy                       ## Tidy modules
 
-# help message
-.PHONY: help
-help:
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-22s\033[0m %s\n", $$1, $$2}'
+# ─── Migrations ───────────────────────────────────────────────
+.PHONY: migrate-up migrate-down migrate-step migrate-back migrate-version migrate-create
 
-# run
-.PHONY: run build
+migrate-up: ## Apply all pending migrations
+	$(M) up
 
-run:
-	go run ./...
+migrate-down: ## Roll back all migrations
+	$(M) down -all
 
-build:
-	go build -o bin/task-manager ./...
+migrate-step: ## Apply 1 migration (or N): make migrate-step N=2
+	$(M) up $(or $(N),1)
 
-# commands
-.PHONY: migrate-up migrate-down migrate-down-all migrate-to migrate-force migrate-version migrate-create
+migrate-back: ## Roll back 1 migration (or N): make migrate-back N=2
+	$(M) down $(or $(N),1)
 
-migrate-up:
-	$(MIGRATE) $(MIGRATE_ARGS) up
+migrate-version: ## Show current migration version
+	$(M) version
 
-migrate-down:
-	$(MIGRATE) $(MIGRATE_ARGS) down 1
-
-migrate-down-all:
-	$(MIGRATE) $(MIGRATE_ARGS) down -all
-
-migrate-to:
-	$(MIGRATE) $(MIGRATE_ARGS) goto $(VERSION)
-
-migrate-force:
-	$(MIGRATE) $(MIGRATE_ARGS) force $(VERSION)
-
-migrate-version:
-	$(MIGRATE) $(MIGRATE_ARGS) version
-
-migrate-create:
-	$(MIGRATE) create -ext sql -dir $(MIGRATIONS_DIR) -seq $(NAME)
-
-# install
-.PHONY: install-migrate-linux install-migrate-mac install-migrate-go
-
-install-migrate-go:
-	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
-
-# update go modules
-.PHONY: tidy
-
-tidy:
-	go mod tidy
+migrate-create: ## New migration: make migrate-create NAME=add_something
+	migrate create -ext sql -dir migrations -seq $(NAME)

@@ -19,7 +19,7 @@ func main() {
 
 	database, err := db.InitDB(dsn)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("db init failed", err)
 	}
 
 	todoRepo := repo.NewTodoRepository(database)
