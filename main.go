@@ -11,15 +11,17 @@ import (
 )
 
 func main() {
-	dsn := "host=localhost user=postgres password=Ernar17042006 dbname=todo port=5432 sslmode=disable"
+	gormDSN := "host=localhost user=postgres password=Ernar17042006 dbname=todo port=5432 sslmode=disable"
 
-	if err := db.RunMigrations(dsn, "file://migrations"); err != nil {
-		log.Fatal("migration failed:", err)
+	migrateDSN := "postgres://postgres:Ernar17042006@localhost:5432/todo?sslmode=disable"
+
+	if err := db.RunMigrations(migrateDSN, "file://migrations"); err != nil {
+		log.Fatal("migrations failed:", err)
 	}
 
-	database, err := db.InitDB(dsn)
+	database, err := db.InitDB(gormDSN)
 	if err != nil {
-		log.Fatal("db init failed", err)
+		log.Fatal("db init failed:", err)
 	}
 
 	todoRepo := repo.NewTodoRepository(database)
@@ -31,9 +33,7 @@ func main() {
 	authHandler := handler.NewAuthHandler(authService)
 
 	r := gin.Default()
-
 	authHandler.RegisterRoutes(r)
 	todoHandler.RegisterRoutes(r)
-
 	r.Run(":8080")
 }
