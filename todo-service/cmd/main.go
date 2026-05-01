@@ -1,5 +1,7 @@
 package main
 
+import "todo-service/app"
+
 func main() {
-	Run()
+	app.Run()
 }
