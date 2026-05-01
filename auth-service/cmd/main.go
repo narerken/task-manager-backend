@@ -1,5 +1,7 @@
 package main
 
+import "auth-service/app"
+
 func main() {
-	Run()
+	app.Run()
 }

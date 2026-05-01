@@ -1,0 +1,69 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Ernar17042006
+      POSTGRES_MULTIPLE_DATABASES: auth-service,todo-service
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/create-multiple-databases.sh:/docker-entrypoint-initdb.d/create-multiple-databases.sh
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: Ernar17042006
+      DB_NAME: auth-service
+      DB_SSLMODE: disable
+      JWT_SECRET: supersecretkey
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  todo-service:
+    build: ./todo-service
+    ports:
+      - "8082:8082"
+    environment:
+      SERVER_PORT: 8082
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: Ernar17042006
+      DB_NAME: todo-service
+      DB_SSLMODE: disable
+      JWT_SECRET: supersecretkey
+      AUTH_SERVICE_URL: http://auth-service:8081
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+    networks:
+      - app-network
+
+volumes:
+  pgdata:
+
+networks:
+  app-network:
+    driver: bridge
