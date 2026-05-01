@@ -3,27 +3,22 @@ package handler
 import (
 	"net/http"
 	"strconv"
-	"todo-service/client"
-	"todo-service/middleware"
-	"todo-service/models"
-	"todo-service/service"
+	"task-manager/models"
+	"task-manager/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 type TodoHandler struct {
-	Service    *service.TodoService
-	AuthClient *client.AuthClient
+	Service *service.TodoService
 }
 
 func NewTodoHandler(s *service.TodoService) *TodoHandler {
 	return &TodoHandler{Service: s}
 }
 
-func (h *TodoHandler) TodoRoutes(r *gin.Engine, authClient *client.AuthClient) {
+func (h *TodoHandler) RegisterRoutes(r *gin.Engine) {
 	todos := r.Group("/todos")
-
-	todos.Use(middleware.AuthMiddleware(authClient))
 
 	todos.POST("", h.Create)
 	todos.GET("", h.GetAll)

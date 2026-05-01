@@ -1,7 +1,7 @@
 package repo
 
 import (
-	"todo-service/models"
+	"task-manager/models"
 
 	"gorm.io/gorm"
 )
