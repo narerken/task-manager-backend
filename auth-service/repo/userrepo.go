@@ -1,7 +1,7 @@
 package repo
 
 import (
-	"task-manager/models"
+	"auth-service/models"
 
 	"gorm.io/gorm"
 )
@@ -20,6 +20,11 @@ func (r *UserRepository) Create(user *models.User) error {
 
 func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
 	var user models.User
+
 	err := r.DB.Where("email = ?", email).First(&user).Error
-	return &user, err
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
