@@ -1,8 +1,8 @@
 package service
 
 import (
-	"task-manager/models"
-	"task-manager/repo"
+	"todo-service/models"
+	"todo-service/repo"
 )
 
 type TodoService struct {
