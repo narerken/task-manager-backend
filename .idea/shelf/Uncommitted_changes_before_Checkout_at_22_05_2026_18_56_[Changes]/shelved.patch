@@ -1,0 +1,102 @@
+Index: todo-service/client/authclient.go
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package client\r\n\r\nimport (\r\n\t\"fmt\"\r\n\r\n\t\"github.com/go-resty/resty/v2\"\r\n)\r\n\r\ntype AuthClient struct {\r\n\tclient  *resty.Client\r\n\tbaseURL string\r\n}\r\n\r\nfunc NewAuthClient(baseURL string) *AuthClient {\r\n\treturn &AuthClient{\r\n\t\tclient:  resty.New(),\r\n\t\tbaseURL: baseURL,\r\n\t}\r\n}\r\n\r\ntype ValidateResponse struct {\r\n\tValid  bool `json:\"valid\"`\r\n\tUserID int  `json:\"user_id\"`\r\n}\r\n\r\nfunc (a *AuthClient) ValidateToken(token string) (*ValidateResponse, error) {\r\n\tvar resp ValidateResponse\r\n\r\n\tr, err := a.client.R().\r\n\t\tSetHeader(\"Authorization\", \"Bearer \"+token).\r\n\t\tSetResult(&resp).\r\n\t\tGet(a.baseURL + \"/auth/validate\")\r\n\r\n\t// \uD83D\uDC47 ЛОГ 1: ошибка HTTP запроса\r\n\tif err != nil {\r\n\t\tfmt.Println(\"HTTP ERROR:\", err)\r\n\t\treturn nil, err\r\n\t}\r\n\r\n\t// \uD83D\uDC47 ЛОГ 2: статус и body ответа\r\n\tfmt.Println(\"STATUS:\", r.Status())\r\n\tfmt.Println(\"RAW RESPONSE:\", r.String())\r\n\r\n\t// \uD83D\uDC47 если статус 400/401/500\r\n\tif r.IsError() {\r\n\t\treturn nil, fmt.Errorf(\"auth error: %s\", r.String())\r\n\t}\r\n\r\n\t// \uD83D\uDC47 ЛОГ 3: что распарсилось в struct\r\n\tfmt.Printf(\"PARSED RESPONSE: %+v\\n\", resp)\r\n\r\n\treturn &resp, nil\r\n}\r\n
+===================================================================
+diff --git a/todo-service/client/authclient.go b/todo-service/client/authclient.go
+--- a/todo-service/client/authclient.go	(revision 34e830f3e47175c9dd38e6a1fbc6aad6c958c05a)
++++ b/todo-service/client/authclient.go	(date 1777701260907)
+@@ -31,22 +31,18 @@
+ 		SetResult(&resp).
+ 		Get(a.baseURL + "/auth/validate")
+ 
+-	// 👇 ЛОГ 1: ошибка HTTP запроса
+ 	if err != nil {
+ 		fmt.Println("HTTP ERROR:", err)
+ 		return nil, err
+ 	}
+ 
+-	// 👇 ЛОГ 2: статус и body ответа
+ 	fmt.Println("STATUS:", r.Status())
+ 	fmt.Println("RAW RESPONSE:", r.String())
+ 
+-	// 👇 если статус 400/401/500
+ 	if r.IsError() {
+ 		return nil, fmt.Errorf("auth error: %s", r.String())
+ 	}
+ 
+-	// 👇 ЛОГ 3: что распарсилось в struct
+ 	fmt.Printf("PARSED RESPONSE: %+v\n", resp)
+ 
+ 	return &resp, nil
+Index: docker-compose.yml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>version: \"3.9\"\r\n\r\nservices:\r\n  postgres:\r\n    image: postgres:15-alpine\r\n    environment:\r\n      POSTGRES_USER: postgres\r\n      POSTGRES_PASSWORD: Ernar17042006\r\n      POSTGRES_MULTIPLE_DATABASES: auth-service,todo-service\r\n    volumes:\r\n      - pgdata:/var/lib/postgresql/data\r\n      - ./scripts/create-multiple-databases.sh:/docker-entrypoint-initdb.d/create-multiple-databases.sh\r\n    ports:\r\n      - \"5432:5432\"\r\n    healthcheck:\r\n      test: [\"CMD-SHELL\", \"pg_isready -U postgres\"]\r\n      interval: 5s\r\n      timeout: 5s\r\n      retries: 10\r\n    networks:\r\n      - app-network\r\n\r\n  auth-service:\r\n    build: ./auth-service\r\n    ports:\r\n      - \"8081:8081\"\r\n    environment:\r\n      SERVER_PORT: 8081\r\n      DB_HOST: postgres\r\n      DB_PORT: 5432\r\n      DB_USER: postgres\r\n      DB_PASSWORD: Ernar17042006\r\n      DB_NAME: auth-service\r\n      DB_SSLMODE: disable\r\n      JWT_SECRET: supersecretkey\r\n    depends_on:\r\n      postgres:\r\n        condition: service_healthy\r\n    networks:\r\n      - app-network\r\n\r\n  todo-service:\r\n    build: ./todo-service\r\n    ports:\r\n      - \"8082:8082\"\r\n    environment:\r\n      SERVER_PORT: 8082\r\n      DB_HOST: postgres\r\n      DB_PORT: 5432\r\n      DB_USER: postgres\r\n      DB_PASSWORD: Ernar17042006\r\n      DB_NAME: todo-service\r\n      DB_SSLMODE: disable\r\n      JWT_SECRET: supersecretkey\r\n      AUTH_SERVICE_URL: http://auth-service:8081\r\n    depends_on:\r\n      postgres:\r\n        condition: service_healthy\r\n      auth-service:\r\n        condition: service_started\r\n    networks:\r\n      - app-network\r\n\r\nvolumes:\r\n  pgdata:\r\n\r\nnetworks:\r\n  app-network:\r\n    driver: bridge
+===================================================================
+diff --git a/docker-compose.yml b/docker-compose.yml
+--- a/docker-compose.yml	(revision 34e830f3e47175c9dd38e6a1fbc6aad6c958c05a)
++++ b/docker-compose.yml	(date 1777677404776)
+@@ -11,7 +11,7 @@
+       - pgdata:/var/lib/postgresql/data
+       - ./scripts/create-multiple-databases.sh:/docker-entrypoint-initdb.d/create-multiple-databases.sh
+     ports:
+-      - "5432:5432"
++      - "5433:5432"
+     healthcheck:
+       test: ["CMD-SHELL", "pg_isready -U postgres"]
+       interval: 5s
+Index: .idea/dataSources.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"DataSourceManagerImpl\" format=\"xml\" multifile-model=\"true\">\r\n    <data-source source=\"LOCAL\" name=\"auth-service@localhost\" uuid=\"22f38f22-c345-42ec-ba84-d8a978fd407b\">\r\n      <driver-ref>postgresql</driver-ref>\r\n      <synchronize>true</synchronize>\r\n      <jdbc-driver>org.postgresql.Driver</jdbc-driver>\r\n      <jdbc-url>jdbc:postgresql://localhost:5432/auth-service</jdbc-url>\r\n      <jdbc-additional-properties>\r\n        <property name=\"com.intellij.clouds.kubernetes.db.host.port\" />\r\n        <property name=\"com.intellij.clouds.kubernetes.db.enabled\" value=\"false\" />\r\n        <property name=\"com.intellij.clouds.kubernetes.db.container.port\" />\r\n      </jdbc-additional-properties>\r\n      <working-dir>$ProjectFileDir$</working-dir>\r\n    </data-source>\r\n    <data-source source=\"LOCAL\" name=\"todo-service@localhost\" uuid=\"a6d131cc-cf30-4d01-9899-52430ff574b5\">\r\n      <driver-ref>postgresql</driver-ref>\r\n      <synchronize>true</synchronize>\r\n      <jdbc-driver>org.postgresql.Driver</jdbc-driver>\r\n      <jdbc-url>jdbc:postgresql://localhost:5432/todo-service</jdbc-url>\r\n      <jdbc-additional-properties>\r\n        <property name=\"com.intellij.clouds.kubernetes.db.host.port\" />\r\n        <property name=\"com.intellij.clouds.kubernetes.db.enabled\" value=\"false\" />\r\n        <property name=\"com.intellij.clouds.kubernetes.db.container.port\" />\r\n      </jdbc-additional-properties>\r\n      <working-dir>$ProjectFileDir$</working-dir>\r\n    </data-source>\r\n  </component>\r\n</project>
+===================================================================
+diff --git a/.idea/dataSources.xml b/.idea/dataSources.xml
+--- a/.idea/dataSources.xml	(revision 34e830f3e47175c9dd38e6a1fbc6aad6c958c05a)
++++ b/.idea/dataSources.xml	(date 1777677613175)
+@@ -1,7 +1,7 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+-    <data-source source="LOCAL" name="auth-service@localhost" uuid="22f38f22-c345-42ec-ba84-d8a978fd407b">
++    <data-source source="LOCAL" name="auth-service@localhost" uuid="85c47bc4-b2ca-40dc-a473-362061b8fec5">
+       <driver-ref>postgresql</driver-ref>
+       <synchronize>true</synchronize>
+       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+@@ -13,11 +13,35 @@
+       </jdbc-additional-properties>
+       <working-dir>$ProjectFileDir$</working-dir>
+     </data-source>
+-    <data-source source="LOCAL" name="todo-service@localhost" uuid="a6d131cc-cf30-4d01-9899-52430ff574b5">
++    <data-source source="LOCAL" name="todo-service@localhost" uuid="ac46a398-c3bd-4ed0-92c2-1d0eb8489d77">
+       <driver-ref>postgresql</driver-ref>
+       <synchronize>true</synchronize>
+       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+       <jdbc-url>jdbc:postgresql://localhost:5432/todo-service</jdbc-url>
++      <jdbc-additional-properties>
++        <property name="com.intellij.clouds.kubernetes.db.host.port" />
++        <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
++        <property name="com.intellij.clouds.kubernetes.db.container.port" />
++      </jdbc-additional-properties>
++      <working-dir>$ProjectFileDir$</working-dir>
++    </data-source>
++    <data-source source="LOCAL" name="auth-service@localhost [2]" uuid="fc07ffc0-a3db-422b-8c59-aba5d211b766">
++      <driver-ref>postgresql</driver-ref>
++      <synchronize>true</synchronize>
++      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
++      <jdbc-url>jdbc:postgresql://localhost:5433/auth-service</jdbc-url>
++      <jdbc-additional-properties>
++        <property name="com.intellij.clouds.kubernetes.db.host.port" />
++        <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
++        <property name="com.intellij.clouds.kubernetes.db.container.port" />
++      </jdbc-additional-properties>
++      <working-dir>$ProjectFileDir$</working-dir>
++    </data-source>
++    <data-source source="LOCAL" name="todo-service@localhost [2]" uuid="d1af7a69-5c47-4774-9b08-c24dc9a9fef7">
++      <driver-ref>postgresql</driver-ref>
++      <synchronize>true</synchronize>
++      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
++      <jdbc-url>jdbc:postgresql://localhost:5433/todo-service</jdbc-url>
+       <jdbc-additional-properties>
+         <property name="com.intellij.clouds.kubernetes.db.host.port" />
+         <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
