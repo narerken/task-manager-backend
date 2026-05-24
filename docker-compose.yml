@@ -1,0 +1,118 @@
+services:
+  task-unity-db:
+    image: postgres:16
+    container_name: task_unity_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Ernar17042006
+      POSTGRES_DB: task_unity_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - task_unity_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d task_unity_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  attendance-session-db:
+    image: postgres:16
+    container_name: attendance_session_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Ernar17042006
+      POSTGRES_DB: attendance_session_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - attendance_session_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d attendance_session_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  task-unity-migrate:
+    image: migrate/migrate:v4.18.3
+    depends_on:
+      task-unity-db:
+        condition: service_healthy
+    volumes:
+      - ./task_unity_backend/migrations:/migrations:ro
+    command:
+      [
+        "-path=/migrations",
+        "-database=postgres://postgres:Ernar17042006@task-unity-db:5432/task_unity_db?sslmode=disable",
+        "up"
+      ]
+    restart: "no"
+
+  attendance-session-migrate:
+    image: migrate/migrate:v4.18.3
+    depends_on:
+      attendance-session-db:
+        condition: service_healthy
+    volumes:
+      - ./attendance_session_service/migrations:/migrations:ro
+    command:
+      [
+        "-path=/migrations",
+        "-database=postgres://postgres:Ernar17042006@attendance-session-db:5432/attendance_session_db?sslmode=disable",
+        "up"
+      ]
+    restart: "no"
+
+  attendance-session-service:
+    build:
+      context: ./attendance_session_service
+    container_name: attendance_session_service
+    depends_on:
+      attendance-session-db:
+        condition: service_healthy
+      attendance-session-migrate:
+        condition: service_completed_successfully
+    environment:
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8081
+      DATABASE_HOST: attendance-session-db
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: Ernar17042006
+      DATABASE_NAME: attendance_session_db
+      DATABASE_SSLMODE: disable
+      MAIN_SERVICE_BASE_URL: http://task-unity-backend:8080
+      INTERNAL_SERVICE_TOKEN: internal-service-secret
+    ports:
+      - "8081:8081"
+
+  task-unity-backend:
+    build:
+      context: ./task_unity_backend
+    container_name: task_unity_backend
+    depends_on:
+      task-unity-db:
+        condition: service_healthy
+      task-unity-migrate:
+        condition: service_completed_successfully
+      attendance-session-service:
+        condition: service_started
+    environment:
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
+      DATABASE_HOST: task-unity-db
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: Ernar17042006
+      DATABASE_NAME: task_unity_db
+      DATABASE_SSLMODE: disable
+      ATTENDANCE_SESSION_SERVICE_BASE_URL: http://attendance-session-service:8081
+      ATTENDANCE_SESSION_SERVICE_TIMEOUT_SECONDS: 10
+      INTERNAL_SERVICE_TOKEN: internal-service-secret
+      JWT_SECRET: secret
+    ports:
+      - "8080:8080"
+
+volumes:
+  task_unity_db_data:
+  attendance_session_db_data:

@@ -1,0 +1,23 @@
+{
+  "server": {
+    "host": "localhost",
+    "port": 8081,
+    "read_timeout": 10,
+    "write_timeout": 10
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5434,
+    "user": "postgres",
+    "password": "Ernar17042006",
+    "db_name": "attendance_session_db",
+    "ssl_mode": "disable"
+  },
+  "main_service": {
+    "base_url": "http://localhost:8080",
+    "timeout_seconds": 10
+  },
+  "internal_service": {
+    "token": "internal-service-secret"
+  }
+}

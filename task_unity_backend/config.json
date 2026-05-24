@@ -1,0 +1,24 @@
+{
+  "server": {
+    "host": "localhost",
+    "port": 8080,
+    "read_timeout": 10,
+    "write_timeout": 10
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5433,
+    "user": "postgres",
+    "password": "Ernar17042006",
+    "db_name": "task_unity_db",
+    "ssl_mode": "disable"
+  },
+  "attendance_session_service": {
+    "base_url": "http://localhost:8081",
+    "timeout_seconds": 10
+  },
+  "internal_service": {
+    "token": "internal-service-secret"
+  },
+  "jwt_secret": "secret"
+}

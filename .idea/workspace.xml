@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="68aef5e6-06df-47be-9c8d-6bbe9732416c" name="Changes" comment="" />
+    <list default="true" id="68aef5e6-06df-47be-9c8d-6bbe9732416c" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/attendance_session_service/migrations/000001_init.down.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/attendance_session_service/migrations/000001_init.up.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -23,6 +28,13 @@
     <favorite-branches>
       <branch-storage>
         <map>
+          <entry type="LOCAL">
+            <value>
+              <list>
+                <branch-info repo="$PROJECT_DIR$" source="feature/final" />
+              </list>
+            </value>
+          </entry>
           <entry type="REMOTE">
             <value>
               <list>
@@ -55,6 +67,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "DefaultGoTemplateProperty": "Go File",
+    "Go Test.TestAppErrorErrorIncludesWrappedError in task-manager/internal/httpx.executor": "Run",
     "Makefile Target.build.executor": "Run",
     "Makefile Target.help.executor": "Run",
     "Makefile Target.migrate-create.executor": "Run",
@@ -71,6 +84,7 @@
     "RunOnceActivity.go.formatter.settings.were.checked": "true",
     "RunOnceActivity.go.migrated.go.modules.settings": "true",
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "git-widget-placeholder": "feature/final",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
     "last_opened_file_path": "C:/Users/user/Desktop/task-manager/backend",
@@ -86,14 +100,24 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\user\Desktop\task-manager\backend\migrations" />
+      <recent name="C:\Users\user\Desktop\task-manager\backend\task_unity_backend\internal\utils" />
+      <recent name="C:\Users\user\Desktop\task-manager\backend\task_unity_backend\internal\service" />
+      <recent name="C:\Users\user\Desktop\task-manager\backend\task_unity_backend\internal\routes" />
+      <recent name="C:\Users\user\Desktop\task-manager\backend\task_unity_backend\internal\repository" />
+      <recent name="C:\Users\user\Desktop\task-manager\backend\task_unity_backend\internal\models\inputs" />
     </key>
   </component>
-  <component name="RunManager" selected="Makefile Target.build">
-    <configuration name="build" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/Makefile" target="build" workingDirectory="" arguments="">
-        <envs />
-      </makefile>
+  <component name="RunManager" selected="Go Test.TestAppErrorErrorIncludesWrappedError in task-manager/internal/httpx">
+    <configuration name="TestAppErrorErrorIncludesWrappedError in task-manager/internal/httpx" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="backend" />
+      <working_directory value="$PROJECT_DIR$/task_unity_backend/internal/httpx" />
+      <root_directory value="$PROJECT_DIR$/task_unity_backend" />
+      <kind value="PACKAGE" />
+      <package value="task-manager/internal/httpx" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestAppErrorErrorIncludesWrappedError\E$" />
       <method v="2" />
     </configuration>
     <configuration name="migrate-to" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
@@ -122,11 +146,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Test.TestAppErrorErrorIncludesWrappedError in task-manager/internal/httpx" />
         <item itemvalue="Makefile Target.run" />
         <item itemvalue="Makefile Target.migrate-version" />
         <item itemvalue="Makefile Target.migrate-up" />
         <item itemvalue="Makefile Target.migrate-to" />
-        <item itemvalue="Makefile Target.build" />
       </list>
     </recent_temporary>
   </component>
